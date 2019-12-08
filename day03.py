@@ -1,70 +1,69 @@
-import fileinput, sys
-from collections import namedtuple, defaultdict
+import sys,math
 
-def part1(filename='in03.txt'):
-  Point = namedtuple('Point', ['x', 'y'])
-  paths = []
-  with fileinput.input(filename) as f:
-    paths.append(f.readline().split(','))
-    paths.append(f.readline().split(','))
-    process(Point(1000, 1000), paths)
-
-def part2(filename='in03.txt'):
-  pass
-
-def process(port, paths):
-  board = [['-' for i in range(port.y*2)] for j in range(port.x*2)]
-  board[port.y][port.x] = 'o'
+def bpath(port, n1):
+  board = []
   p1 = port
-  for c in paths[0]:
+  for c in n1:
     direction = c[0]
     distance = int(c[1:])
-    if direction = 'L':
-      p2 = Point(p1.x - distance, p1.y)
-      board[p2.y][p2.x] = '+'
-      for i in range(1, p1.x - p2.x): board[p1.y][p1.x - p2.x] = '-'
-    elif direction = 'R':
-      p2 = Point(p1.x + distance, p1.y)
-      board[p2.y][p2.x] = '+'
-      for i in range(p1.x, p1.x + distance): board[p1.y][p1.x + p2.x] = '-'
-    elif direction = 'D':
-      p2 = Point(p1.x, p1.y + distance)
-      board[p2.y][p2.x] = '+'
-      # TODO
-      for i in range(p1.y, p2.y): board[p1.y][p1.x] = '-'
+    if direction == 'L':
+      points = [(p1[0] - i, p1[1]) for i in range(distance)]
+      board += points
+      p1 = (p1[0] - distance, p1[1])
+    if direction == 'R':
+      points = [(p1[0] + i, p1[1]) for i in range(distance)]
+      board += points
+      p1 = (p1[0] + distance, p1[1])
+    if direction == 'D':
+      points = [(p1[0], p1[1] - i) for i in range(distance)]
+      board += points
+      p1 = (p1[0], p1[1] - distance)
+    if direction == 'U':
+      points = [(p1[0], p1[1] + i) for i in range(distance)]
+      board += points
+      p1 = (p1[0], p1[1] + distance)
+  return board
 
-    elif direction = 'U':
-      pass
-    p1 = Point(p1.x - distance, p1.y)
-  print(f"Central port is located@({port.x}, {port.y})")
-  print_board(board)
+def manhattan(p1, p2):
+  return abs(p1[0] - p2[0]) + abs(p1[1] - p2[1])
 
-def print_board(board):
-  for r in board:
-    print(r)
+def part1(filename='in03.txt'):
+  with open(filename) as f:
+    path1 = f.readline().rstrip('\n').split(',')
+    path2 = f.readline().rstrip('\n').split(',')
+    port = (0, 0)
+    board1 = bpath(port, path1)
+    board2 = bpath(port, path2)
+    insk = set(board1).intersection(set(board2))
+    s = math.inf
+    p = port
+    for i in insk:
+      if i[0] == 0 and i[1] == 0: continue
+      d = manhattan(port, i)
+      print(f"point: {i}, distance: {d}")
+      if d < s:
+        s = d
+        p = i
+    print(f"output part1: point={p}, distance={s}")
 
-def manhattan_distance(p1, p2):
-  return abs(p1.x - p2.x) + abs(p1.y - p2.y)
-
-def line_intersection(p1, p2, p3, p4):
-  a1 = p1.y - p2.y
-  b1 = p2.x - p1.x
-  c1 = -(p1.x * p2.y - p2.x * p1.y)
-
-  a2 = p3.y - p4.y
-  b2 = p4.x - p3.x
-  c2 = -(p3.x * p4.y - p4.x * p3.y)
-
-  d = a1 * b2 - b1 * a2
-  dx = c1 * b2 - b1 * c2
-  dy = a1 * c2 - c1 * a2
-
-  if d != 0:
-    x = dx / d
-    y = dy / d
-    return Point(x, y)
-  else:
-    return False
+def part2(filename='in03.txt'):
+  with open(filename) as f:
+    path1 = f.readline().rstrip('\n').split(',')
+    path2 = f.readline().rstrip('\n').split(',')
+    port = (0, 0)
+    board1 = bpath(port, path1)
+    board2 = bpath(port, path2)
+    insk = set(board1).intersection(set(board2))
+    s = math.inf
+    p = port
+    for i in insk:
+      if i[0] == 0 and i[1] == 0: continue
+      d = manhattan(port, i)
+      print(f"point: {i}, distance: {d}")
+      if d < s:
+        s = d
+        p = i
+    print(f"output part2: point={p}, steps path A={board1.index(p)}, steps path B={board2.index(p)}")
 
 if __name__ == "__main__":
   filename = sys.argv[1]
