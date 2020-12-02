@@ -28,23 +28,23 @@ def mintransfers(d, s, n, path):
       path.remove(i)
   return False, path
 
-def part1(filename='in06.txt'):
+def part1(filename):
   indata = [line.rstrip('\n') for line in open(filename)]
   ntree = build(indata)
   orbits = maxorbits(ntree, ntree['COM'], 0)
-  print(f"output part1: total orbits {orbits}")
+  print(f"part1 >>> total orbits {orbits}")
 
-def part2(filename='in06.txt'):
+def part2(filename):
   indata = [line.rstrip('\n') for line in open(filename)]
   ntree = build(indata)
   toyou = []
   mintransfers(ntree, 'YOU', ntree['COM'], toyou)
-  print(f"output part2: {toyou} to YOU")
+  print(f"part2 >>> {toyou} to YOU")
   tosan = []
   mintransfers(ntree, 'SAN', ntree['COM'], tosan)
-  print(f"output part2: {tosan} to SAM")
+  print(f"part2 >>> {tosan} to SAM")
   tocommon = len(set(toyou).intersection(set(tosan)))
-  print(f"output part2: min orbital path {len(toyou) - tocommon + len(tosan) - tocommon}")
+  print(f"part2 >>> min orbital path {len(toyou) - tocommon + len(tosan) - tocommon}")
 
 if __name__ == "__main__":
   filename = sys.argv[1]

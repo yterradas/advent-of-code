@@ -29,7 +29,7 @@ def part1(start, end):
     n = str(i)
     if increasing(n) and q1(n):
       c += 1
-  return c
+  print(f"part1 >>> {c} possible passwords between (234208, 765869)")
 
 def part2(start, end):
   c = 0
@@ -37,8 +37,8 @@ def part2(start, end):
     n = str(i)
     if increasing(n) and q2(n):
       c += 1
-  return c
+  print(f"part2 >>> {c} possible passwords between (234208, 765869)")
 
 if __name__ == "__main__":
-  print(f"part1: {part1(234208, 765869)} possible passwords")
-  print(f"part2: {part2(234208, 765869)} possible passwords")
+  part1(234208, 765869)
+  part2(234208, 765869)
