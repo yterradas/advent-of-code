@@ -8,7 +8,7 @@ def part1(filename):
     d = parans.count(')');
     print(f"part1 >>> Santa goes to floor={u-d}")
 
-    
+
 def part2(filename):
     with open(filename) as f:
         parans = f.readline().rstrip('\n')
@@ -20,7 +20,7 @@ def part2(filename):
         if n == -1:
             print(f"part2 >>> Santa first enters the basement on {i+1}")
             break
-        
+
 
 if __name__ == "__main__":
   filename = sys.argv[1]
