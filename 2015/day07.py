@@ -1,6 +1,7 @@
 import sys, functools
 from enum import Enum
 
+
 class Op(Enum):
     Noop = 0
     Not = 1
@@ -10,49 +11,130 @@ class Op(Enum):
     RShift = 5
 
 
-def parseinst(line):
-    l = line.split('->')
-    output = l[1].lstrip(' ')
-    lside = l[0].rstrip(' ').split(' ')
-    if len(lside) == 1:
-        op1 = lside[0].strip(' ')
-        return (op1, Op.Noop, output)
-    if 'NOT' in lside:
-        op1 = lside[1].strip(' ')
-        return (op1, Op.Not, output)
-    if 'AND' in lside:
-        op1 = lside[0].strip(' ')
-        op2 = lside[2].strip(' ')
-        return (op1, op2, Op.And, output)
-    if 'OR' in lside:
-        op1 = lside[0].strip(' ')
-        op2 = lside[2].strip(' ')
-        return (op1, op2, Op.Or, output)
-    if 'RSHIFT' in lside:
-        op1 = lside[0].strip(' ')
-        op2 = lside[2].strip(' ')
-        return (op1, op2, Op.RShift, output)
-    if 'LSHIFT' in lside:
-        op1 = lside[0].strip(' ')
-        op2 = lside[2].strip(' ')
-        return (op1, op2, Op.LShift, output)
-    
+class Inst:
+    def __init__(self, operation, operands, wire):
+        self.operation = operation
+        self.operands = operands
+        self.wire = wire
+        self.output = 0
+        self.done = False
+
+    def __str__(self):
+        return f"Instruction(operation={self.operation}, operands={self.operands}, wire={self.wire}, output={self.output}, done={self.done})"
+        
+    def candoit(self):
+        if self.operation == Op.Noop or self.operation == Op.Not:
+            return self.operands[0].isdigit()
+        return self.operands[0].isdigit() and self.operands[1].isdigit()
+
+    def doit(self):
+        if self.done: return
+        else: self.done = True
+        
+        if self.operation == Op.Noop:
+            self.output = int(self.operands[0]) & 0xffff
+        if self.operation == Op.Not:
+            self.output = ~int(self.operands[0]) & 0xffff
+        if self.operation == Op.And:
+            self.output = int(self.operands[0]) & int(self.operands[1]) & 0xffff
+        if self.operation == Op.Or:
+            self.output = int(self.operands[0]) | int(self.operands[1]) & 0xffff
+        if self.operation == Op.LShift: 
+            self.output = int(self.operands[0]) << int(self.operands[1]) & 0xffff
+        if self.operation == Op.RShift:
+            self.output = int(self.operands[0]) >> int(self.operands[1]) & 0xffff
+            
+    def parse(line):
+        l = line.split('->')
+        wire = l[1].lstrip(' ')
+        lside = l[0].rstrip(' ').split(' ')
+        operands = []
+        optype = None
+        if len(lside) == 1:
+            operands = [lside[0].strip(' ')]
+            optype = Op.Noop
+        elif 'NOT' in lside:
+            operands = [lside[1].strip(' ')]
+            optype = Op.Not
+        elif 'AND' in lside:
+            operands = [lside[0].strip(' '), lside[2].strip(' ')]
+            optype = Op.And
+        elif 'OR' in lside:
+            operands = [lside[0].strip(' '), lside[2].strip(' ')]
+            optype = Op.Or
+        elif 'RSHIFT' in lside:
+            operands = [lside[0].strip(' '), lside[2].strip(' ')]
+            optype = Op.RShift
+        elif 'LSHIFT' in lside:
+            operands = [lside[0].strip(' '), lside[2].strip(' ')]
+            optype = Op.LShift
+        else:
+            print("unknown instruction: ", line)
+            exit(1)
+
+        #print(f"parsing {line} yielded >> ", optype, operands, wire)
+        return Inst(optype, operands, wire)
+
 
 def part1(filename):
     with open(filename) as f:
         lines = [l.rstrip('\n') for l in f.readlines()]
 
-    instructions = [parseinst(line) for line in lines]
-    [print(i) for i in instructions]
+    instructions = [Inst.parse(line) for line in lines]
+    
+    wires = {}
+    exloop = True
+    while exloop:
+        exloop = False
+        for inst in instructions:
+            if inst.done: continue
+            if inst.candoit():
+                inst.doit()
+                wires[inst.wire] = inst.output
+                continue
+            for i, o in enumerate(inst.operands):
+                if o.isdigit(): continue
+                if o in wires:
+                    if wires[o] != -1:
+                        inst.operands[i] = str(wires[o])
+                else:
+                    wires[o] = -1
+            exloop = True
 
-    # loop through instructions replacing values as found?
-    # save operand -> value in map for lookup
-
-    #print(f"part1 >>> Santa says lit {0} lights")
+    #[print(k," ==> ", v) for k,v in sorted(wires.items())]
+    print(f"part1 >>> Bobby's instructions sent {wires['a']} to wire a")
 
 
 def part2(filename):
-    pass
+    with open(filename) as f:
+        lines = [l.rstrip('\n') for l in f.readlines()]
+
+    instructions = [Inst.parse(line) for line in lines]
+
+    # overrides
+    next(inst for inst in instructions if inst.wire == 'b').operands[0] = '956'
+    
+    wires = {}
+    exloop = True
+    while exloop:
+        exloop = False
+        for inst in instructions:
+            if inst.done: continue
+            if inst.candoit():
+                inst.doit()
+                wires[inst.wire] = inst.output
+                continue
+            for i, o in enumerate(inst.operands):
+                if o.isdigit(): continue
+                if o in wires:
+                    if wires[o] != -1:
+                        inst.operands[i] = str(wires[o])
+                else:
+                    wires[o] = -1
+            exloop = True
+
+    #[print(k," ==> ", v) for k,v in sorted(wires.items())]
+    print(f"part2 >>> Bobby's instructions sent {wires['a']} to wire a")
 
 
 if __name__ == "__main__":
