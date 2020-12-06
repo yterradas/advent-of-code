@@ -1,41 +1,35 @@
-import sys, functools
-
-def calccharmem(line):
-    pass
-
-
-def calccharnum(line):
-    pass
+import sys, functools, re
 
 
 def part1(filename):
     with open(filename) as f:
         lines = [l.rstrip('\n') for l in f.readlines()]
 
-    # encoding is not done correctly
-    # need to show utf8 before stripping quotes
-
-        
-    #.encode('utf-8').decode('unicode_escape')
-    #counts = [(len(l), len(l.strip('\"')), l) for l in lines]
-    #len(bytearray(l.strip('\"'), 'utf-8').decode("unicode_escape"))
     counts = []
     for l in lines:
-        print("processing >>", l)
-        enc = str(l.strip('\"'))
-        counts.append((len(l), len(enc), l))
+        dec = bytearray(l, 'utf-8').decode('unicode_escape')
+        strlen = len(l)
+        # length of bytearray minus 2 quotes - quotes - double slashes
+        declen = len(dec) - 2
+        counts.append((strlen, declen))
 
-    [print(c) for c in counts]
-    #[print(l) for l in counts]
-    total = 0
-    for c in counts:
-        total += c[0] - c[1]
-
+    total = sum([c[0]-c[1] for c in counts])
     print(f"part1 >>> Santa's list of naughty/nice will be {total}")
 
 
 def part2(filename):
-    pass
+    with open(filename) as f:
+        lines = [l.rstrip('\n') for l in f.readlines()]
+
+    counts = []
+    for l in lines:
+        strlen = len(l)
+        # length of string + (2 quotes + 2 backslashes) + backslashes + quotes
+        enclen = len(l) + 4 + l[1:-1].count('\\') + l[1:-1].count('"')
+        counts.append((strlen, enclen))
+
+    total = sum([c[1]-c[0] for c in counts])
+    print(f"part2 >>> Santa's list of naughty/nice will be {total}")
 
 
 if __name__ == "__main__":
