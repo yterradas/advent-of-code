@@ -17,9 +17,11 @@ def part2(filname):
     lines = [l.rstrip('\n') for l in f.readlines()]
 
   boardingids = [getlocation(l[:7], identity='B') * 8 + getlocation(l[7:], identity='R') for l in lines]
-  fullids = [i for i in range(min(boardingids), max(boardingids)+1)]
-  missingid = set(fullids).difference(boardingids)
-  print(f"part2 >>> Santa's seat ID is {missingid}")
+  boardingids.sort()
+  minid, maxid = boardingids[0], boardingids[-1]
+  sumids = sum(boardingids)
+  missingid = (maxid - minid + 1) * (maxid + minid) / 2 - sumids
+  print(f"part2 >>> Santa's seat ID is {int(missingid)}")
 
 
 if __name__ == "__main__":
